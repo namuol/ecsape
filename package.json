@@ -1,5 +1,5 @@
 {
-  "name": "esc",
+  "name": "ecsape",
   "version": "0.0.0",
   "description": "a lightweight entity component system ... system",
   "main": "index.js",
