@@ -3,7 +3,9 @@
   var Component;
 
   Component = (function() {
-    function Component() {}
+    function Component(name) {
+      this.name = name;
+    }
 
     return Component;
 

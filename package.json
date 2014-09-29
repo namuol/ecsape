@@ -14,6 +14,12 @@
     "entity",
     "component",
     "system",
+    "ces",
+    "cse",
+    "ecs",
+    "esc",
+    "sce",
+    "sec",
     "game",
     "lightweight"
   ],
@@ -28,5 +34,9 @@
     "tape": "^3.0.0",
     "tap": "^0.4.12",
     "tap-min": "^0.1.0"
+  },
+  "dependencies": {
+    "bm": "^0.1.0",
+    "dll": "^0.1.0"
   }
 }
