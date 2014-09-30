@@ -31,6 +31,7 @@ class World extends EventEmitter
   constructor: ->
     super
     @entities = new LinkedList
+    @systems = new LinkedList
     @_families = {}
 
   add: (entity) ->
@@ -42,6 +43,24 @@ class World extends EventEmitter
     @emit 'entityAdded', entity
 
     return entity
+
+  addSystem: (system) ->
+    return system  if @systems.contains system
+
+    @systems.add system
+
+    system.init? @
+
+    return system
+  
+  invoke: (name, args...) ->
+    next = @systems.first
+  
+    while next?
+      next.obj[name]? args...
+      next = next.next
+  
+    return
 
   _onComponentsChanged: (entity) ->
     @emit 'entityComponentsChanged', entity

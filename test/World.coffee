@@ -3,6 +3,7 @@ World = require '../World'
 
 # TODO: isolate/dependency injection:
 Entity = require '../Entity'
+System = require '../System'
 
 describe = (item, cb) ->
   it = (capability, test) ->
@@ -13,7 +14,7 @@ describe = (item, cb) ->
 
 describe 'a world', (it) ->
   it 'can have entities added to it', (t) ->
-    world = new World # shining, shimmering.
+    world = new World # shining, shimmering, splendid
     e = new Entity
     t.false world.entities.contains e
     world.add e
@@ -96,4 +97,65 @@ describe 'a world', (it) ->
     e.removeComponent 'a'
 
     t.false family.contains e
+    t.end()
+
+  it 'should call system.init when any system is added with "addSystem()"', (t) ->
+    world = new World
+
+    class ASystem extends System
+      called: false
+      init: (world) ->
+        @called = true
+        @world = world
+
+    s = new ASystem
+    world.addSystem s
+
+    t.true s.called
+    t.equal world, s.world
+    t.end()
+
+  it 'should call the named function and supply given args when "invoke()" is called', (t) ->
+    world = new World
+
+    callCount = 0
+    calledArguments = null
+    class ASystem extends System
+      runMe: (args...) ->
+        callCount += 1
+        calledArguments = args
+
+    s = new ASystem
+    world.addSystem s
+
+    args = ['test', {hello:true}, [0, 1, 2]]
+
+    world.invoke 'runMe', args...
+    t.equal callCount, 1
+    t.deepEqual calledArguments, args
+    t.end()
+
+  it 'should invoke functions in the order the systems were added', (t) ->
+    world = new World
+
+    class ASystem extends System
+      @order: 0
+      runMe: ->
+        @order = ASystem.order
+        ASystem.order += 1
+
+    s = new ASystem
+    s2 = new ASystem
+    s3 = new ASystem
+
+    world.addSystem s
+    world.addSystem s2
+    world.addSystem s3
+
+    world.invoke 'runMe'
+
+    t.equal s.order, 0
+    t.equal s2.order, 1
+    t.equal s3.order, 2
+
     t.end()

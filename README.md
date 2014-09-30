@@ -2,11 +2,9 @@
 
 An [Entity Component System][ecs_wikipedia] for JavaScript games.
 
-(Currently unimplemented; this is useless, as-is!)
-
 [ecs_wikipedia]: http://en.wikipedia.org/wiki/Entity_component_system "Wikipedia: Entity component system"
 
-## API concept
+## API concept/examples
 
 ```coffee
 {Entity, Component, System, World} = require 'ecsape'
@@ -31,6 +29,9 @@ class Health extends Component
   damage: (difference) ->
     @amount = Math.min (@amount - difference), @maxHealth
 
+class Texture extends Component
+  name: 'texture'
+
 # How to wrap an existing class to avoid entity.sprite.sprite:
 class Sprite extends PIXI.Sprite
   name: 'sprite'
@@ -39,9 +40,10 @@ class Sprite extends PIXI.Sprite
 
 
 class PhysicsSystem extends System
-  require: ['position', 'velocity']
+  init: (@world) ->
+    @entities = @world.get 'position', 'velocity'
   update: ->
-    for entity in @entities
+    @entities.each (entity) ->
       p = entity.position
       v = entity.velocity
 
@@ -49,35 +51,26 @@ class PhysicsSystem extends System
       p.y += v.y
 
 class SpriteSystem extends System
-  require: ['position', 'texture']
-  entityAdded: (entity) ->
-
-class Player extends Entity
-  constructor: ->
-    super
-    @addComponent new Texture
-    @addComponent new Position
-    @addComponent new Velocity
-    @addComponent new Health
+  init: (@world) ->
+    @entities = @world.get 'position', 'texture'
+  update: ->
+    @entities.each (entity) ->
+      @renderer.draw entity.texture, entity.position # etc...
 
 world = new World
 
 world.addSystem new PhysicsSystem
+world.addSystem new SpriteSystem
 
-hero = new Player
+hero = new Entity
 world.add hero
 
-animate = ->
+tick = ->
   world.invoke 'update'
-  requestAnimationFrame animate
+  requestAnimationFrame tick
 
-animate()
+tick()
 
 # Later...
 world.remove hero
 ```
-
-
-## Plans
-
-- Use arbitrary-size bitmasks to quickly check status of component groupings (instead of looping through all components of all entities)

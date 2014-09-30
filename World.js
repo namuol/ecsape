@@ -64,6 +64,7 @@
     function World() {
       World.__super__.constructor.apply(this, arguments);
       this.entities = new LinkedList;
+      this.systems = new LinkedList;
       this._families = {};
     }
 
@@ -76,6 +77,29 @@
       entity.on('componentRemoved', this._onComponentsChanged.bind(this));
       this.emit('entityAdded', entity);
       return entity;
+    };
+
+    World.prototype.addSystem = function(system) {
+      if (this.systems.contains(system)) {
+        return system;
+      }
+      this.systems.add(system);
+      if (typeof system.init === "function") {
+        system.init(this);
+      }
+      return system;
+    };
+
+    World.prototype.invoke = function() {
+      var args, name, next, _base;
+      name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      next = this.systems.first;
+      while (next != null) {
+        if (typeof (_base = next.obj)[name] === "function") {
+          _base[name].apply(_base, args);
+        }
+        next = next.next;
+      }
     };
 
     World.prototype._onComponentsChanged = function(entity) {
