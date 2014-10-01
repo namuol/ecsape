@@ -14,18 +14,21 @@ A flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring 
 class Position extends Component
   name: 'position'
   constructor: ({x, y}) ->
+    super
     @x = x or 0
     @y = y or 0
 
 class Velocity extends Component
   name: 'velocity'
   constructor: ({x, y}) ->
+    super
     @x = x or 0
     @y = y or 0
 
 class Health extends Component
   name: 'health'
   constructor: ({maxHealth, amount}) ->
+    super
     @maxHealth = maxHealth or 1
     @amount = Math.min (amount or @maxHealth), @maxHealth
   damage: (difference) ->
@@ -33,13 +36,12 @@ class Health extends Component
 
 class Texture extends Component
   name: 'texture'
+  constructor: ({path}) ->
+    super
+    @load path
 
-# How to wrap an existing class to avoid entity.sprite.sprite:
-class Sprite extends PIXI.Sprite
-  name: 'sprite'
-  constructor: ->
-    super # <whatever args required for sprite>
-
+  load: (path) ->
+    # ... some texture loading logic goes here ...
 
 class PhysicsSystem extends System
   init: (@world) ->
@@ -57,7 +59,7 @@ class SpriteSystem extends System
     @entities = @world.get 'position', 'texture'
   update: ->
     @entities.each (entity) ->
-      @renderer.draw entity.texture, entity.position # etc...
+      # @renderer.draw entity.texture, entity.position # etc...
 
 world = new World
 

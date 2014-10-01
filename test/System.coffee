@@ -9,5 +9,8 @@ describe = (item, cb) ->
   cb it
 
 describe 'a system', (it) ->
-  it 'has no tests written', (t) ->
+  it 'has a unique ID', (t) ->
+    a = new System
+    b = new System
+    t.notEqual a._id, b._id
     t.end()

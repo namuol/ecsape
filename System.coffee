@@ -1,5 +1,3 @@
-{EventEmitter} = require 'events'
-
 __currentID = 0
 
 class System

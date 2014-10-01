@@ -1,4 +1,4 @@
 class Component
-  constructor: (@name) ->
+  constructor: ->
 
 module.exports = Component
