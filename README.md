@@ -11,7 +11,7 @@ A flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring 
 ```coffee
 {Entity, Component, System, World} = require 'ecsape'
 
-class Position extends Vector2
+class Position extends Component
   name: 'position'
   constructor: ({x, y}) ->
     @x = x or 0
