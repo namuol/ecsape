@@ -2,11 +2,9 @@
 
 A flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring your own components/systems.
 
-**NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/namuol/ecsape/issues).)
+**NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/gitsubio/ecsape/issues).)
 
 [ecs_wikipedia]: http://en.wikipedia.org/wiki/Entity_component_system "Wikipedia: Entity component system"
-
-## API concept/examples
 
 ```coffee
 {Entity, Component, System, World} = require 'ecsape'
@@ -78,3 +76,188 @@ tick()
 # Later...
 world.remove hero
 ```
+
+## API
+
+```js
+var ECS = require('ecsape');
+```
+
+#### Create a new Entity
+
+```js
+var entity = new ECS.Entity();
+```
+
+#### Create a new Component dynamically
+
+```js
+var position = new Component();
+position.name = 'position';
+position.x = position.y = 0;
+```
+
+#### Define a new Component type
+
+**NOTE**: ecsape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes).
+
+```js
+var inherits = require('util').inherits;
+
+function Position = function (pos) {
+  this.x = pos.x;
+  this.y = pos.y;
+};
+
+Position.prototype.name = 'position';
+
+inherits(Position, ECS.Component);
+```
+
+#### Add a Component to an Entity
+
+```js
+entity.addComponent(new Position({x: 100, y: 100}));
+```
+
+#### Remove a Component from an Entity
+
+```js
+entity.removeComponent(position);
+```
+
+#### Create a new World
+
+```js
+var world = new ECS.World();
+```
+
+#### Add an entity to the World
+
+```js
+world.add(entity);
+```
+
+#### Get all entities that have certain Components
+
+```js
+var movables = world.get('position', 'velocity');
+```
+
+**NOTE**: `world.get` returns a special type of list of entities.
+
+This list **automatically updates** when entities that match its criteria are added or removed,
+so it can be saved to refer to later, for instance, as a property inside a System.
+
+See also:
+
+* [`added` Event](#list_event_added)
+* [`removed` Event](#list_event_removed)
+
+#### Iterate through an Entity List with a callback
+
+```js
+movables.each(function (entity) {
+  entity.position.x -= 100;
+});
+```
+
+#### Iterate through an Entity List with a loop (faster)
+
+```js
+var next = movables.first,
+    entity;
+
+while (next) {
+  entity = next.obj;
+  entity.position.x -= 100;
+  next = next.next;
+};
+```
+
+#### <a name='list_event_added'></a> Detect when an Entity is added to an Entity List
+
+```js
+movables.on('added', function (entity) {
+  console.log('An entity was added!');
+});
+```
+
+#### <a name='list_event_removed'></a> Detect when an Entity is removed from an Entity List
+
+```js
+movables.on('removed', function (entity) {
+  console.log('An entity was removed!');
+});
+```
+
+#### Create a new System dynamically
+
+```js
+var physics = new ECS.System();
+
+physics.init = function (world) {
+  this.world = world;
+  this.entities = world.get('position', 'velocity');
+};
+
+physics.update = function () {
+  this.entities.each(function (entity) {
+    entity.position.x += entity.velocity.x;
+    entity.position.y += entity.velocity.y;
+  });
+};
+```
+
+**NOTE**: The `init` function is important; it runs when a System is [added to the world][world_addSystem].
+
+#### Create a new System type
+
+```js
+var inherits = require('util').inherits;
+
+function PhysicsSystem = function () {};
+
+PhysicsSystem.prototype.init = function (world) {
+  this.world = world;
+  this.entities = world.get('position', 'velocity');
+};
+
+PhysicsSystem.prototype.update = function (dt) {
+  this.entities.each(function (entity) {
+    entity.position.x += entity.velocity.x * dt;
+    entity.position.y += entity.velocity.y * dt;
+  });
+};
+
+inherits(PhysicsSystem, ECS.System);
+
+var physics = new PhysicsSystem();
+```
+
+#### Add a system to the World
+
+```js
+world.addSystem(physics);
+```
+
+**NOTE**: This will automatically invoke the `init` function on the System being added (if one exists).
+The first and only argument provided to `init()` is a reference to the World.
+
+#### Remove a system from the world
+
+```js
+world.removeSystem(physics);
+```
+
+#### Invoke a function on all systems
+
+```js
+world.invoke('update', dt);
+```
+
+```js
+world.invoke('hasManyArguments', a, b, c, d);
+```
+
+**NOTE**: Functions are invoked in the order the systems were added to the world.
