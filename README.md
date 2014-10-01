@@ -1,6 +1,8 @@
-# ecsape
+# ecsape [![Build Status](https://drone.io/github.com/gitsubio/ecsape/status.png)](https://drone.io/github.com/gitsubio/ecsape/latest) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=dependencies) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/dev-status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=devDependencies)
 
-An [Entity Component System][ecs_wikipedia] for JavaScript games.
+A flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring your own components/systems.
+
+**NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/namuol/ecsape/issues).)
 
 [ecs_wikipedia]: http://en.wikipedia.org/wiki/Entity_component_system "Wikipedia: Entity component system"
 
