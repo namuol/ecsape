@@ -83,6 +83,10 @@ tick()
 world.remove hero
 ```
 
+## Examples
+
+For complete examples, see [ecsape-examples](http://github.com/gitsubio/ecsape-examples).
+
 ## API
 
 ```js
