@@ -159,3 +159,22 @@ describe 'a world', (it) ->
     t.equal s3.order, 2
 
     t.end()
+
+  it 'should invoke functions with the System as the context', (t) ->
+    world = new World
+    
+    context = null
+
+    class ASystem extends System
+      runMe: ->
+        context = @
+
+    s = new ASystem
+    world.addSystem s
+
+    world.invoke 'runMe'
+
+    t.equal context, s
+
+    t.end()
+

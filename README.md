@@ -104,14 +104,14 @@ position.x = position.y = 0;
 ```js
 var inherits = require('util').inherits;
 
-function Position = function (pos) {
+var Position = function (pos) {
   this.x = pos.x;
   this.y = pos.y;
 };
 
-Position.prototype.name = 'position';
-
 inherits(Position, ECS.Component);
+
+Position.prototype.name = 'position';
 ```
 
 #### Add a Component to an Entity
@@ -216,7 +216,11 @@ physics.update = function () {
 ```js
 var inherits = require('util').inherits;
 
-function PhysicsSystem = function () {};
+var PhysicsSystem = function () {
+  PhysicsSystem.super_.call(this);
+};
+
+inherits(PhysicsSystem, ECS.System);
 
 PhysicsSystem.prototype.init = function (world) {
   this.world = world;
@@ -229,8 +233,6 @@ PhysicsSystem.prototype.update = function (dt) {
     entity.position.y += entity.velocity.y * dt;
   });
 };
-
-inherits(PhysicsSystem, ECS.System);
 
 var physics = new PhysicsSystem();
 ```
