@@ -55,7 +55,7 @@ class PhysicsSystem extends System
 class SpriteSystem extends System
   init: (@world) ->
     @entities = @world.get 'position', 'texture'
-  update: ->
+  render: ->
     @entities.each (entity) ->
       # @renderer.draw entity.texture, entity.position # etc...
 
@@ -65,10 +65,16 @@ world.addSystem new PhysicsSystem
 world.addSystem new SpriteSystem
 
 hero = new Entity
+hero.addComponent new Position
+hero.addComponent new Velocity
+hero.addComponent new Health maxHealth: 100
+hero.addComponent new Texture path: 'textures/hero.png'
+
 world.add hero
 
 tick = ->
   world.invoke 'update'
+  world.invoke 'render'
   requestAnimationFrame tick
 
 tick()
@@ -236,6 +242,9 @@ PhysicsSystem.prototype.update = function (dt) {
 
 var physics = new PhysicsSystem();
 ```
+
+**NOTE**: When creating systems by inheriting from `ECS.System`, you **must** call the super-constructor, as it assigns a unique
+ID to the System which is used internally.
 
 #### Add a system to the World
 
