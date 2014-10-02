@@ -263,3 +263,11 @@ world.invoke('hasManyArguments', a, b, c, d);
 ```
 
 **NOTE**: Functions are invoked in the order the systems were added to the world.
+
+## License
+
+MIT
+
+----
+
+[![Analytics](https://ga-beacon.appspot.com/UA-33247419-2/ecsape/README.md)](https://github.com/igrigorik/ga-beacon)
