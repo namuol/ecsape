@@ -93,13 +93,18 @@ For complete examples, see [ecsape-examples](http://github.com/gitsubio/ecsape-e
 var ECS = require('ecsape');
 ```
 
-#### Create a new Entity
+**NOTE**: ecsape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes) to facilitate inheritance.
+
+#### <a name='entity_new'></a> Create a new Entity dynamically
 
 ```js
 var entity = new ECS.Entity();
 ```
 
-#### Create a new Component dynamically
+**NOTE**: When inheriting from `ECS.Entity`, you **must** call the super-constructor, as it assigns a unique
+ID to the Entity which is used internally.
+
+#### <a name='component_dynamic'></a> Create a new Component dynamically
 
 ```js
 var position = new Component();
@@ -107,9 +112,7 @@ position.name = 'position';
 position.x = position.y = 0;
 ```
 
-#### Define a new Component type
-
-**NOTE**: ecsape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes).
+#### <a name='component_type'></a> Define a new Component type
 
 ```js
 var inherits = require('util').inherits;
@@ -124,31 +127,31 @@ inherits(Position, ECS.Component);
 Position.prototype.name = 'position';
 ```
 
-#### Add a Component to an Entity
+#### <a name='entity_addComponent'></a> Add a Component to an Entity
 
 ```js
 entity.addComponent(new Position({x: 100, y: 100}));
 ```
 
-#### Remove a Component from an Entity
+#### <a name='entity_removeComponent'></a> Remove a Component from an Entity
 
 ```js
 entity.removeComponent(position);
 ```
 
-#### Create a new World
+#### <a name='world_new'></a> Create a new World
 
 ```js
 var world = new ECS.World();
 ```
 
-#### Add an entity to the World
+#### <a name='world_add'></a> Add an entity to the World
 
 ```js
 world.add(entity);
 ```
 
-#### Get all entities that have certain Components
+#### <a name='world_get'></a> Get all entities that have certain Components
 
 ```js
 var movables = world.get('position', 'velocity');
@@ -164,7 +167,7 @@ See also:
 * [`added` Event](#list_event_added)
 * [`removed` Event](#list_event_removed)
 
-#### Iterate through an Entity List with a callback
+#### <a name='entityList_each'></a> Iterate through an Entity List with a callback
 
 ```js
 movables.each(function (entity) {
@@ -172,7 +175,7 @@ movables.each(function (entity) {
 });
 ```
 
-#### Iterate through an Entity List with a loop (faster)
+#### <a name='entityList_iterate_loop'></a> Iterate through an Entity List with a loop (faster)
 
 ```js
 var next = movables.first,
@@ -201,7 +204,7 @@ movables.on('removed', function (entity) {
 });
 ```
 
-#### Create a new System dynamically
+#### <a name='system_dynamic'></a> Create a new System dynamically
 
 ```js
 var physics = new ECS.System();
@@ -219,9 +222,9 @@ physics.update = function () {
 };
 ```
 
-**NOTE**: The `init` function is important; it runs when a System is [added to the world][world_addSystem].
+**NOTE**: The `init` function is important; it runs when a System is [added to the world](#world_addSystem).
 
-#### Create a new System type
+#### <a name='system_type'></a> Create a new System type
 
 ```js
 var inherits = require('util').inherits;
@@ -250,7 +253,7 @@ var physics = new PhysicsSystem();
 **NOTE**: When creating systems by inheriting from `ECS.System`, you **must** call the super-constructor, as it assigns a unique
 ID to the System which is used internally.
 
-#### Add a system to the World
+#### <a name='world_addSystem'></a> Add a system to the World
 
 ```js
 world.addSystem(physics);
@@ -259,13 +262,13 @@ world.addSystem(physics);
 **NOTE**: This will automatically invoke the `init` function on the System being added (if one exists).
 The first and only argument provided to `init()` is a reference to the World.
 
-#### Remove a system from the world
+#### <a name='world_removeSystem'></a>  Remove a system from the world
 
 ```js
 world.removeSystem(physics);
 ```
 
-#### Invoke a function on all systems
+#### <a name='world_invoke'></a> Invoke a function on all systems
 
 ```js
 world.invoke('update', dt);
@@ -275,7 +278,9 @@ world.invoke('update', dt);
 world.invoke('hasManyArguments', a, b, c, d);
 ```
 
-**NOTE**: Functions are invoked in the order the systems were added to the world.
+If a system does not have a function with the given name, it is skipped.
+
+Functions are invoked in the order the systems were added to the world.
 
 ## Install
 
