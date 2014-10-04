@@ -277,6 +277,12 @@ world.invoke('hasManyArguments', a, b, c, d);
 
 **NOTE**: Functions are invoked in the order the systems were added to the world.
 
+## Install
+
+```bash
+npm install ecsape --save
+```
+
 ## License
 
 MIT
