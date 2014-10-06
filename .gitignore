@@ -1,1 +1,5 @@
 node_modules/
+test/Component.js
+test/Entity.js
+test/System.js
+test/World.js
