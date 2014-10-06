@@ -1,87 +1,10 @@
-# ecsape [![Build Status](https://drone.io/github.com/gitsubio/ecsape/status.png)](https://drone.io/github.com/gitsubio/ecsape/latest) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=dependencies) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/dev-status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=devDependencies)
+# ECSape [![Build Status](https://drone.io/github.com/gitsubio/ecsape/status.png)](https://drone.io/github.com/gitsubio/ecsape/latest) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=dependencies) [![devDependency Status](https://david-dm.org/gitsubio/ecsape/dev-status.svg?style=flat-square)](https://david-dm.org/gitsubio/ecsape#info=devDependencies)
 
-A flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring your own components/systems.
+A fast, flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring your own components/systems.
 
 **NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/gitsubio/ecsape/issues).)
 
 [ecs_wikipedia]: http://en.wikipedia.org/wiki/Entity_component_system "Wikipedia: Entity component system"
-
-```coffee
-{Entity, Component, System, World} = require 'ecsape'
-
-class Position extends Component
-  name: 'position'
-  constructor: ({x, y}) ->
-    super
-    @x = x or 0
-    @y = y or 0
-
-class Velocity extends Component
-  name: 'velocity'
-  constructor: ({x, y}) ->
-    super
-    @x = x or 0
-    @y = y or 0
-
-class Health extends Component
-  name: 'health'
-  constructor: ({maxHealth, amount}) ->
-    super
-    @maxHealth = maxHealth or 1
-    @amount = Math.min (amount or @maxHealth), @maxHealth
-  damage: (difference) ->
-    @amount = Math.min (@amount - difference), @maxHealth
-
-class Texture extends Component
-  name: 'texture'
-  constructor: ({path}) ->
-    super
-    @load path
-
-  load: (path) ->
-    # ... some texture loading logic goes here ...
-
-class PhysicsSystem extends System
-  init: (@world) ->
-    @entities = @world.get 'position', 'velocity'
-  update: ->
-    @entities.each (entity) ->
-      p = entity.position
-      v = entity.velocity
-
-      p.x += v.x
-      p.y += v.y
-
-class SpriteSystem extends System
-  init: (@world) ->
-    @entities = @world.get 'position', 'texture'
-  render: ->
-    @entities.each (entity) ->
-      # @renderer.draw entity.texture, entity.position # etc...
-
-world = new World
-
-world.addSystem new PhysicsSystem
-world.addSystem new SpriteSystem
-
-hero = new Entity
-hero.addComponent new Position
-hero.addComponent new Velocity
-hero.addComponent new Health maxHealth: 100
-hero.addComponent new Texture path: 'textures/hero.png'
-
-world.add hero
-
-tick = ->
-  world.invoke 'update'
-  world.invoke 'render'
-  requestAnimationFrame tick
-
-tick()
-
-# Later...
-world.remove hero
-```
 
 ## Examples
 
@@ -93,7 +16,7 @@ For complete examples, see [ecsape-examples](http://github.com/gitsubio/ecsape-e
 var ECS = require('ecsape');
 ```
 
-**NOTE**: ecsape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes) to facilitate inheritance.
+**NOTE**: ECSape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes) to facilitate inheritance.
 
 #### <a name='entity_new'></a> Create a new Entity dynamically
 
@@ -190,9 +113,7 @@ so it can be saved to refer to later, for instance, as a property inside a Syste
 
 See also:
 
-* [`entityAdded` Event](#list_event_entityAdded)
 * [`entitiesAdded` Event](#list_event_entitiesAdded)
-* [`entityRemoved` Event](#list_event_entityRemoved)
 * [`entitiesRemoved` Event](#list_event_entitiesRemoved)
 
 #### <a name='entityList_each'></a> Iterate through an Entity List with a callback
@@ -216,26 +137,6 @@ while (next) {
 };
 ```
 
-#### <a name='list_event_entityAdded'></a> Detect when an Entity is added to an Entity List
-
-```js
-world.get('position', 'velocity').on('entityAdded', function (entity) {
-  console.log('An entity was added!');
-});
-```
-
-This is only trigged when [`world.add`](#world_add) is used to add an entity.
-
-#### <a name='list_event_entityRemoved'></a> Detect when an Entity is removed from an Entity List
-
-```js
-world.get('position', 'velocity').on('entityRemoved', function (entity) {
-  console.log('An entity was removed!');
-});
-```
-
-This is only trigged when [`world.remove`](#world_remove) is used to remove an entity.
-
 #### <a name='list_event_entitiesAdded'></a> Detect when an Entity is added to an Entity List
 
 ```js
@@ -244,8 +145,6 @@ world.get('position', 'velocity').on('entitiesAdded', function (entities) {
 });
 ```
 
-This is only trigged when [`world.addAll`](#world_addAll) is used to add multiple entities in bulk.
-
 #### <a name='list_event_entitiesRemoved'></a> Detect when an Entity is removed from an Entity List
 
 ```js
@@ -253,8 +152,6 @@ world.get('position', 'velocity').on('entitiesRemoved', function (entities) {
   console.log('Number of entities removed: ' + entities.length);
 });
 ```
-
-This is only trigged when [`world.removeAll`](#world_removeAll) is used to remove multiple entities in bulk.
 
 #### <a name='system_dynamic'></a> Create a new System dynamically
 
@@ -319,6 +216,17 @@ The first and only argument provided to `init()` is a reference to the World.
 ```js
 world.removeSystem(physics);
 ```
+
+#### <a name='world_flush'></a> Flush all added/removed/changed entities into corresponding entity lists
+
+```js
+world.flush();
+```
+
+This updates all lists acquired with [`world.get`](#world_get), based on which entities have
+been added/removed, or have changed their component lists, since the last time `flush` was called.
+
+Usually, you'll want to call this once per "tick" of your game.
 
 #### <a name='world_invoke'></a> Invoke a function on all systems
 

@@ -16,11 +16,9 @@
       var entity, next;
       this.components = components;
       Family.__super__.constructor.call(this);
-      world.on('entityComponentsChanged', this._onEntityComponentsChanged.bind(this));
-      world.on('entityAdded', this._onEntityAdded.bind(this));
-      world.on('entityRemoved', this._onEntityRemoved.bind(this));
-      world.on('entitiesAdded', this._onEntitiesAdded.bind(this));
-      world.on('entitiesRemoved', this._onEntitiesRemoved.bind(this));
+      world.on('__entitiesChanged', this._onEntitiesChanged.bind(this));
+      world.on('__entitiesAdded', this._onEntitiesAdded.bind(this));
+      world.on('__entitiesRemoved', this._onEntitiesRemoved.bind(this));
       next = world.entities.first;
       while (next != null) {
         entity = next.obj;
@@ -31,36 +29,6 @@
       }
       return;
     }
-
-    Family.prototype._onEntityComponentsChanged = function(entity) {
-      if (!this.contains(entity)) {
-        if (entity._components.has(this.components)) {
-          this.add(entity);
-          this.emit('entityAdded', entity);
-        }
-      } else {
-        if (!entity._components.has(this.components)) {
-          this.remove(entity);
-          this.emit('entityRemoved', entity);
-        }
-      }
-    };
-
-    Family.prototype._onEntityAdded = function(entity) {
-      if (!entity._components.has(this.components)) {
-        return;
-      }
-      this.add(entity);
-      this.emit('entityAdded', entity);
-    };
-
-    Family.prototype._onEntityRemoved = function(entity) {
-      if (!this.contains(entity)) {
-        return;
-      }
-      this.remove(entity);
-      this.emit('entityRemoved', entity);
-    };
 
     Family.prototype._onEntitiesAdded = function(entities) {
       var entitiesAdded, entity, _i, _len;
@@ -82,11 +50,39 @@
       entitiesRemoved = [];
       for (_i = 0, _len = entities.length; _i < _len; _i++) {
         entity = entities[_i];
-        this.remove(entity);
+        if (!this.remove(entity)) {
+          continue;
+        }
         entitiesRemoved.push(entity);
       }
       if (entitiesRemoved.length > 0) {
         this.emit('entitiesRemoved', entitiesRemoved);
+      }
+    };
+
+    Family.prototype._onEntitiesChanged = function(entities) {
+      var added, entity, removed, _i, _len;
+      added = [];
+      removed = [];
+      for (_i = 0, _len = entities.length; _i < _len; _i++) {
+        entity = entities[_i];
+        if (!this.contains(entity)) {
+          if (entity._components.has(this.components)) {
+            this.add(entity);
+            added.push(entity);
+          }
+        } else {
+          if (!entity._components.has(this.components)) {
+            this.remove(entity);
+            removed.push(entity);
+          }
+        }
+      }
+      if (added.length > 0) {
+        this.emit('entitiesAdded', added);
+      }
+      if (removed.length > 0) {
+        return this.emit('entitiesRemoved', removed);
       }
     };
 
@@ -114,55 +110,67 @@
       this.systems = new LinkedList;
       this._families = {};
       this._onComponentsChanged = this._onComponentsChanged.bind(this);
+      this.__added = [];
+      this.__removed = [];
+      this.__changed = [];
     }
 
     World.prototype.add = function(entity) {
       if (this.entities.contains(entity)) {
         return entity;
       }
-      this.entities.add(entity);
-      entity.on('componentsAdded', this._onComponentsChanged);
-      entity.on('componentsRemoved', this._onComponentsChanged);
-      this.emit('entityAdded', entity);
+      this.__added.push(entity);
       return entity;
     };
 
     World.prototype.addAll = function(entities) {
-      var entity, _i, _len;
-      for (_i = 0, _len = entities.length; _i < _len; _i++) {
-        entity = entities[_i];
-        if (this.entities.contains(entity)) {
-          continue;
-        }
-        this.entities.add(entity);
-        entity.on('componentsAdded', this._onComponentsChanged);
-        entity.on('componentsRemoved', this._onComponentsChanged);
-      }
-      this.emit('entitiesAdded', entities);
+      var _ref1;
+      (_ref1 = this.__added).push.apply(_ref1, entities);
     };
 
     World.prototype.remove = function(entity) {
-      if (!this.entities.remove(entity)) {
-        return false;
-      }
-      entity.removeListener('componentsAdded', this._onComponentsChanged);
-      entity.removeListener('componentsRemoved', this._onComponentsChanged);
-      this.emit('entityRemoved', entity);
-      return true;
+      this.__removed.push(entity);
     };
 
     World.prototype.removeAll = function(entities) {
-      var entity, _i, _len;
-      for (_i = 0, _len = entities.length; _i < _len; _i++) {
-        entity = entities[_i];
-        if (!this.entities.remove(entity)) {
-          continue;
-        }
-        entity.removeListener('componentsAdded', this._onComponentsChanged);
-        entity.removeListener('componentsRemoved', this._onComponentsChanged);
-      }
-      this.emit('entitiesRemoved', entities);
+      var _ref1;
+      (_ref1 = this.__removed).push.apply(_ref1, entities);
       return entities;
+    };
+
+    World.prototype.flush = function() {
+      var entity, _i, _j, _len, _len1, _ref1, _ref2;
+      if (this.__added.length > 0) {
+        _ref1 = this.__added;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          entity = _ref1[_i];
+          if (this.entities.contains(entity)) {
+            continue;
+          }
+          this.entities.add(entity);
+          entity.on('componentsAdded', this._onComponentsChanged);
+          entity.on('componentsRemoved', this._onComponentsChanged);
+        }
+        this.emit('__entitiesAdded', this.__added);
+        this.__added.length = 0;
+      }
+      if (this.__removed.length > 0) {
+        _ref2 = this.__removed;
+        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
+          entity = _ref2[_j];
+          if (!this.entities.remove(entity)) {
+            continue;
+          }
+          entity.removeListener('componentsAdded', this._onComponentsChanged);
+          entity.removeListener('componentsRemoved', this._onComponentsChanged);
+        }
+        this.emit('__entitiesRemoved', this.__removed);
+        this.__removed.length = 0;
+      }
+      if (this.__changed.length > 0) {
+        this.emit('__entitiesChanged', this.__changed);
+        return this.__changed.length = 0;
+      }
     };
 
     World.prototype.addSystem = function(system) {
@@ -199,7 +207,7 @@
     };
 
     World.prototype._onComponentsChanged = function(entity) {
-      return this.emit('entityComponentsChanged', entity);
+      return this.__changed.push(entity);
     };
 
     return World;

@@ -18,6 +18,7 @@ describe 'a world', (it) ->
     e = new Entity
     t.false world.entities.contains e
     world.add e
+    world.flush()
     t.true world.entities.contains e
     t.end()
 
@@ -29,7 +30,8 @@ describe 'a world', (it) ->
       t.false world.entities.contains e
   
     world.addAll entities
-  
+    world.flush()
+
     for e in entities
       t.true world.entities.contains e
     t.end()
@@ -38,24 +40,19 @@ describe 'a world', (it) ->
     world = new World
     e = new Entity
     t.equal e, world.add e
+    world.flush()
     t.equal e, world.add e
     t.end()
 
   it 'can remove a single entity with "remove()"', (t) ->
     world = new World
     e = new Entity
+    
     world.add e
     world.remove e
-    t.false world.entities.contains e
-    t.end()
+    world.flush()
 
-  it 'returns true "remove(e)" actually removed an entity, false if it did not need to be removed', (t) ->
-    world = new World
-    e = new Entity
-    t.false world.remove e
-    world.add e
-    t.true world.remove e
-    t.false world.remove e
+    t.false world.entities.contains e
     t.end()
 
   it 'can remove many entities with "addAll()"', (t) ->
@@ -66,6 +63,7 @@ describe 'a world', (it) ->
       t.false world.entities.contains e
   
     world.addAll entities
+    world.flush()
   
     for e in entities
       t.true world.entities.contains e
@@ -86,7 +84,8 @@ describe 'a world', (it) ->
     world.add e1
     world.add e2
     world.add e3
-    
+    world.flush()
+
     t.true world.get('a').contains e1
     t.false world.get('a').contains e2
     t.true world.get('a').contains e3
@@ -99,65 +98,6 @@ describe 'a world', (it) ->
     world = new World
     t.equal world.get(), undefined
     t.end()
-
-  it 'allows you to listen for "entityAdded" events on the family returned from "get()"', (t) ->
-    world = new World
-    e1 = new Entity
-    e1.addComponent name: 'a'
-    e2 = new Entity
-    e2.addComponent name: 'b'
-
-    entitiesWithA = world.get 'a'
-    fired = false
-    entitiesWithA.on 'entityAdded', (entity) ->
-      fired = true
-      t.equal entity, e1
-    
-    entitiesWithB = world.get 'b'
-    fired2 = false
-    entitiesWithB.on 'entityAdded', (entity) ->
-      fired2 = true
-      t.equal entity, e2
-
-    # Above events should fire immediately, before next tick...
-    world.add e1
-    world.add e2
-
-    process.nextTick ->
-      t.true fired
-      t.true fired2
-      t.end()
-
-  it 'allows you to listen for "entityRemoved" events on the family returned from "get()"', (t) ->
-    world = new World
-    e1 = new Entity
-    e1.addComponent name: 'a'
-    e2 = new Entity
-    e2.addComponent name: 'b'
-
-    entitiesWithA = world.get 'a'
-    fired = false
-    entitiesWithA.on 'entityRemoved', (entity) ->
-      fired = true
-      t.equal entity, e1
-
-    entitiesWithB = world.get 'b'
-    fired2 = false
-    entitiesWithB.on 'entityRemoved', (entity) ->
-      fired2 = true
-      t.equal entity, e2
-    
-    world.add e1
-    world.add e2
-
-    # Above events should fire immediately, before next tick...
-    world.remove e1
-    world.remove e2
-
-    process.nextTick ->
-      t.true fired
-      t.true fired2
-      t.end()
 
   it 'allows you to listen for "entitiesAdded" events on the family returned from "get()"', (t) ->
     world = new World
@@ -176,6 +116,7 @@ describe 'a world', (it) ->
     
     # Above event should fire immediately, before next tick...
     world.addAll entities
+    world.flush()
 
     process.nextTick ->
       t.true fired
@@ -198,8 +139,11 @@ describe 'a world', (it) ->
       t.deepEqual entities, entitiesRemoved
     
     world.addAll entities
+    world.flush()
+
     # Above event should fire immediately, before next tick...
     world.removeAll entities
+    world.flush()
 
     process.nextTick ->
       t.true fired
@@ -209,9 +153,12 @@ describe 'a world', (it) ->
     world = new World
     e = new Entity
     world.add e
+    world.flush()
+
     family = world.get 'a'
     
     e.addComponent name: 'a'
+    world.flush()
 
     t.true family.contains e
     t.end()
@@ -222,9 +169,12 @@ describe 'a world', (it) ->
     e.addComponent name: 'a'
 
     world.add e
+    world.flush()
+
     family = world.get 'a'
     
     e.removeComponent 'a'
+    world.flush()
 
     t.false family.contains e
     t.end()
@@ -325,8 +275,13 @@ describe 'a world', (it) ->
   it 'cleans up internally-used listeners from an entity when it is removed', (t) ->
     world = new World
     e = new Entity
+    
     world.add e
+    world.flush()
+    
     world.remove e
+    world.flush()
+
     t.equal e.listeners('componentsAdded').length, 0
     t.equal e.listeners('componentsRemoved').length, 0
     t.end()
