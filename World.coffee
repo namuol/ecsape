@@ -82,7 +82,7 @@ class World extends EventEmitter
     @emit 'entityAdded', entity
 
     return entity
-  
+
   addAll: (entities) ->
     for entity in entities
       continue  if @entities.contains entity
@@ -121,7 +121,7 @@ class World extends EventEmitter
     system.init? @
 
     return system
-  
+
   invoke: (name, args...) ->
     next = @systems.first
   
@@ -130,7 +130,7 @@ class World extends EventEmitter
       next = next.next
   
     return
-  
+
   get: ->
     return undefined  if arguments.length is 0
 

@@ -151,6 +151,32 @@ var world = new ECS.World();
 world.add(entity);
 ```
 
+#### <a name='world_addAll'></a> Add many entities in bulk to the World
+
+```js
+var entities = [
+  entity1,
+  entity2,
+  // ...
+  entityN
+];
+
+world.addAll(entities);
+```
+
+#### <a name='world_removeAll'></a> Remove many entities from the World in bulk
+
+```js
+var entities = [
+  entity1,
+  entity2,
+  // ...
+  entityN
+];
+
+world.removeAll(entities);
+```
+
 #### <a name='world_get'></a> Get all entities that have certain Components
 
 ```js
@@ -164,13 +190,15 @@ so it can be saved to refer to later, for instance, as a property inside a Syste
 
 See also:
 
-* [`added` Event](#list_event_added)
-* [`removed` Event](#list_event_removed)
+* [`entityAdded` Event](#list_event_entityAdded)
+* [`entitiesAdded` Event](#list_event_entitiesAdded)
+* [`entityRemoved` Event](#list_event_entityRemoved)
+* [`entitiesRemoved` Event](#list_event_entitiesRemoved)
 
 #### <a name='entityList_each'></a> Iterate through an Entity List with a callback
 
 ```js
-movables.each(function (entity) {
+world.get('position', 'velocity').each(function (entity) {
   entity.position.x -= 100;
 });
 ```
@@ -178,7 +206,7 @@ movables.each(function (entity) {
 #### <a name='entityList_iterate_loop'></a> Iterate through an Entity List with a loop (faster)
 
 ```js
-var next = movables.first,
+var next = world.get('position', 'velocity').first,
     entity;
 
 while (next) {
@@ -188,21 +216,45 @@ while (next) {
 };
 ```
 
-#### <a name='list_event_added'></a> Detect when an Entity is added to an Entity List
+#### <a name='list_event_entityAdded'></a> Detect when an Entity is added to an Entity List
 
 ```js
-movables.on('added', function (entity) {
+world.get('position', 'velocity').on('entityAdded', function (entity) {
   console.log('An entity was added!');
 });
 ```
 
-#### <a name='list_event_removed'></a> Detect when an Entity is removed from an Entity List
+This is only trigged when [`world.add`](#world_add) is used to add an entity.
+
+#### <a name='list_event_entityRemoved'></a> Detect when an Entity is removed from an Entity List
 
 ```js
-movables.on('removed', function (entity) {
+world.get('position', 'velocity').on('entityRemoved', function (entity) {
   console.log('An entity was removed!');
 });
 ```
+
+This is only trigged when [`world.remove`](#world_remove) is used to remove an entity.
+
+#### <a name='list_event_entitiesAdded'></a> Detect when an Entity is added to an Entity List
+
+```js
+world.get('position', 'velocity').on('entitiesAdded', function (entities) {
+  console.log('Number of entities added: ' + entities.length);
+});
+```
+
+This is only trigged when [`world.addAll`](#world_addAll) is used to add multiple entities in bulk.
+
+#### <a name='list_event_entitiesRemoved'></a> Detect when an Entity is removed from an Entity List
+
+```js
+world.get('position', 'velocity').on('entitiesRemoved', function (entities) {
+  console.log('Number of entities removed: ' + entities.length);
+});
+```
+
+This is only trigged when [`world.removeAll`](#world_removeAll) is used to remove multiple entities in bulk.
 
 #### <a name='system_dynamic'></a> Create a new System dynamically
 
@@ -278,9 +330,9 @@ world.invoke('update', dt);
 world.invoke('hasManyArguments', a, b, c, d);
 ```
 
-If a system does not have a function with the given name, it is skipped.
-
 Functions are invoked in the order the systems were added to the world.
+
+If a system does not implement the specified function, it is skipped.
 
 ## Install
 

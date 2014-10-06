@@ -22,7 +22,7 @@ describe 'a world', (it) ->
     t.end()
 
   it 'can add many entities with "addAll()"', (t) ->
-    world = new World # shining, shimmering, splendid
+    world = new World
     entities = (new Entity for i in [0..3])
   
     for e in entities
@@ -329,4 +329,10 @@ describe 'a world', (it) ->
     world.remove e
     t.equal e.listeners('componentsAdded').length, 0
     t.equal e.listeners('componentsRemoved').length, 0
+    t.end()
+
+  it 'type can be extended with coffeescript-style inheritance', (t) ->
+    class OtherWorld extends World
+    otherWorld = new OtherWorld
+    t.true otherWorld instanceof World
     t.end()
