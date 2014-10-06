@@ -1,14 +1,14 @@
 {
   "name": "ecsape",
-  "version": "0.1.1",
-  "description": "a lightweight entity component system ... system",
+  "version": "0.2.0",
+  "description": "fast and flexible Entity Component System",
   "main": "index.js",
   "scripts": {
     "test": "make test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/namuol/esc"
+    "url": "https://github.com/gitsubio/ecsape"
   },
   "keywords": [
     "entity",
@@ -26,9 +26,9 @@
   "author": "Louis Acresti <louis.acresti@gmail.com> (http://namuol.github.io/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/namuol/esc/issues"
+    "url": "https://github.com/gitsubio/ecsape/issues"
   },
-  "homepage": "https://github.com/namuol/esc",
+  "homepage": "https://github.com/gitsubio/ecsape",
   "devDependencies": {
     "browserify": "^6.0.2",
     "coffee-script": "^1.8.0",
