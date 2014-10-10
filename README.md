@@ -18,6 +18,30 @@ var ECS = require('ecsape');
 
 **NOTE**: ECSape does not include/impose any classical OO utilities. For the sake of example we use node's built-in `util.inherits`, but you can use whatever you like (including "vanilla" CoffeeScript classes) to facilitate inheritance.
 
+#### Index
+
+* [Create a new Entity dynamically](#entity_new)
+* [Create a new Component dynamically](#component_dynamic)
+* [Define a new Component type](#component_type)
+* [Add a Component to an Entity](#entity_addComponent)
+* [Remove a Component from an Entity](#entity_removeComponent)
+* [Create a new World](#world_new)
+* [Add an entity to the World](#world_add)
+* [Add many entities to the World](#world_addAll) in bulk
+* [Remove an entity from the world](#world_remove)
+* [Remove many entities from the World in bulk](#world_removeAll)
+* [Flush all added/removed/changed entities into corresponding entity lists](#world_flush)
+* [Get all entities that have certain Components](#world_get)
+* [Iterate through an Entity List with a callback](#entityList_each)
+* [Iterate through an Entity List with a loop (faster)](#entityList_iterate_loop)
+* [Detect when an Entity is added to an Entity List](#list_event_entitiesAdded)
+* [Detect when an Entity is removed from an Entity List](#list_event_entitiesRemoved)
+* [Create a new System dynamically](#system_dynamic)
+* [Define a new System type](#system_type)
+* [Add a system to the World](#world_addSystem)
+* [Remove a system from the world](#world_removeSystem)
+* [Invoke a function on all systems](#world_invoke)
+
 #### <a name='entity_new'></a> Create a new Entity dynamically
 
 ```js
@@ -30,7 +54,7 @@ ID to the Entity which is used internally.
 #### <a name='component_dynamic'></a> Create a new Component dynamically
 
 ```js
-var position = new Component();
+var position = new ECS.Component();
 position.name = 'position';
 position.x = position.y = 0;
 ```
@@ -74,7 +98,7 @@ var world = new ECS.World();
 world.add(entity);
 ```
 
-#### <a name='world_addAll'></a> Add many entities in bulk to the World
+#### <a name='world_addAll'></a> Add many entities to the World in bulk
 
 ```js
 var entities = [
@@ -85,6 +109,12 @@ var entities = [
 ];
 
 world.addAll(entities);
+```
+
+#### <a name='world_remove'></a> Remove an entity from the world
+
+```js
+world.remove(entity);
 ```
 
 #### <a name='world_removeAll'></a> Remove many entities from the World in bulk
@@ -99,6 +129,18 @@ var entities = [
 
 world.removeAll(entities);
 ```
+
+
+#### <a name='world_flush'></a> Flush all added/removed/changed entities into corresponding entity lists
+
+```js
+world.flush();
+```
+
+This updates all lists acquired with [`world.get`](#world_get), based on which entities have
+been added/removed, or have changed their component lists, since the last time `flush` was called.
+
+Usually, you'll want to call this once per "tick" of your game.
 
 #### <a name='world_get'></a> Get all entities that have certain Components
 
@@ -173,7 +215,7 @@ physics.update = function () {
 
 **NOTE**: The `init` function is important; it runs when a System is [added to the world](#world_addSystem).
 
-#### <a name='system_type'></a> Create a new System type
+#### <a name='system_type'></a> Define a new System type
 
 ```js
 var inherits = require('util').inherits;
@@ -209,24 +251,13 @@ world.addSystem(physics);
 ```
 
 **NOTE**: This will automatically invoke the `init` function on the System being added (if one exists).
-The first and only argument provided to `init()` is a reference to the World.
+The first and only argument provided to `init()` is a reference to this `World`.
 
 #### <a name='world_removeSystem'></a>  Remove a system from the world
 
 ```js
 world.removeSystem(physics);
 ```
-
-#### <a name='world_flush'></a> Flush all added/removed/changed entities into corresponding entity lists
-
-```js
-world.flush();
-```
-
-This updates all lists acquired with [`world.get`](#world_get), based on which entities have
-been added/removed, or have changed their component lists, since the last time `flush` was called.
-
-Usually, you'll want to call this once per "tick" of your game.
 
 #### <a name='world_invoke'></a> Invoke a function on all systems
 
@@ -241,6 +272,10 @@ world.invoke('hasManyArguments', a, b, c, d);
 Functions are invoked in the order the systems were added to the world.
 
 If a system does not implement the specified function, it is skipped.
+
+See also:
+
+* [`world.flush()`](#world_flush)
 
 ## Install
 
