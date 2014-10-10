@@ -27,7 +27,7 @@ var ECS = require('ecsape');
 * [Remove a Component from an Entity](#entity_removeComponent)
 * [Create a new World](#world_new)
 * [Add an entity to the World](#world_add)
-* [Add many entities to the World](#world_addAll) in bulk
+* [Add many entities to the World in bulk](#world_addAll)
 * [Remove an entity from the world](#world_remove)
 * [Remove many entities from the World in bulk](#world_removeAll)
 * [Flush all added/removed/changed entities into corresponding entity lists](#world_flush)
