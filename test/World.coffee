@@ -228,6 +228,45 @@ describe 'a world', (it) ->
     t.equal callCount, 1
     t.deepEqual calledArguments, args
     t.end()
+  
+  it 'should call system.deinit when any added system is removed with "removeSystem()"', (t) ->
+    world = new World
+
+    class ASystem extends System
+      callCount: 0
+      deinit: (world) ->
+        @callCount += 1
+        @world = world
+
+    s = new ASystem
+    world.addSystem s
+    world.removeSystem s
+    world.removeSystem s
+    world.removeSystem s
+
+    t.equal s.callCount, 1
+    t.equal world, s.world
+    
+    s2 = new ASystem
+    world.removeSystem s2
+
+    t.equal s2.callCount, 0
+    t.end()
+
+  it 'should NOT invoke system methods when the system has been removed', (t) ->
+    world = new World
+
+    class ASystem extends System
+      called: false
+      test: ->
+        @called = true
+
+    s = new ASystem
+    world.addSystem s
+    world.removeSystem s
+    world.invoke 'test'
+    t.false s.called
+    t.end()
 
   it 'should invoke functions in the order the systems were added', (t) ->
     world = new World

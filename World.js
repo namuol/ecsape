@@ -184,6 +184,13 @@
       return system;
     };
 
+    World.prototype.removeSystem = function(system) {
+      if (!this.systems.remove(system)) {
+        return;
+      }
+      return typeof system.deinit === "function" ? system.deinit(this) : void 0;
+    };
+
     World.prototype.invoke = function() {
       var args, name, next, _base;
       name = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];

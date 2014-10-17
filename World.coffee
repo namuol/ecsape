@@ -121,6 +121,10 @@ class World extends EventEmitter
     system.init? @
 
     return system
+  
+  removeSystem: (system) ->
+    return  if not @systems.remove system
+    system.deinit? @
 
   invoke: (name, args...) ->
     next = @systems.first
