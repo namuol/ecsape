@@ -18,38 +18,49 @@ class Family extends LinkedList
     return
 
   _onEntitiesAdded: (entities) ->
-    entitiesAdded = []
-    for entity in entities
+    entitiesAdded = new LinkedList
+    next = entities.first
+    while next
+      entity = next.obj
       if entity._components.has @components
         @add entity
-        entitiesAdded.push entity
+        entitiesAdded.add entity
+      next = next.next
+
     if entitiesAdded.length > 0
       @emit 'entitiesAdded', entitiesAdded
     return
 
   _onEntitiesRemoved: (entities) ->
-    entitiesRemoved = []
-    for entity in entities
+    entitiesRemoved = new LinkedList
+    next = entities.first
+    while next
+      entity = next.obj
       continue  if not @remove entity
-      entitiesRemoved.push entity
+      entitiesRemoved.add entity
+      next = next.next
+
     if entitiesRemoved.length > 0
       @emit 'entitiesRemoved', entitiesRemoved
     return
 
   _onEntitiesChanged: (entities) ->
-    added = []
-    removed = []
+    added = new LinkedList
+    removed = new LinkedList
 
-    for entity in entities
+    next = entities.first
+    while next
+      entity = next.obj
       if not @contains entity
         if entity._components.has @components
           @add entity
-          added.push entity
+          added.add entity
       else
         if not entity._components.has @components
           @remove entity
-          removed.push entity
-
+          removed.add entity
+      next = next.next
+      
     if added.length > 0
       @emit 'entitiesAdded', added
     
@@ -67,51 +78,59 @@ class World extends EventEmitter
     @systems = new LinkedList
     @_families = {}
     @_onComponentsChanged = @_onComponentsChanged.bind @
-    @__added = []
-    @__removed = []
-    @__changed = []
+    @__added = new LinkedList
+    @__removed = new LinkedList
+    @__changed = new LinkedList
 
   add: (entity) ->
     return entity  if @entities.contains entity
-    @__added.push entity
+    @__added.add entity
     return entity
 
   addAll: (entities) ->
-    @__added.push entities...
+    for entity in entities
+      @__added.add entity
     return
 
   remove: (entity) ->
-    @__removed.push entity
+    @__removed.add entity
     return
 
   removeAll: (entities) ->
-    @__removed.push entities...
+    for entity in entities
+      @__removed.add entity
     return entities
   
   flush: ->
     if @__added.length > 0
-      for entity in @__added
+      next = @__added.first
+      while next
+        entity = next.obj
         continue  if @entities.contains entity
         @entities.add entity
         entity.on 'componentsAdded', @_onComponentsChanged
         entity.on 'componentsRemoved', @_onComponentsChanged
+        next = next.next
 
       @emit '__entitiesAdded', @__added
-      @__added.length = 0
+      @__added.clear()
 
     if @__removed.length > 0
-      for entity in @__removed
+      next = @__removed.first
+      while next
+        entity = next.obj
         continue  if not @entities.remove entity
 
         entity.removeListener 'componentsAdded', @_onComponentsChanged
         entity.removeListener 'componentsRemoved', @_onComponentsChanged
+        next = next.next
 
       @emit '__entitiesRemoved', @__removed
-      @__removed.length = 0
+      @__removed.clear()
 
     if @__changed.length > 0
       @emit '__entitiesChanged', @__changed
-      @__changed.length = 0
+      @__changed.clear()
 
   addSystem: (system) ->
     return system  if @systems.contains system
@@ -143,6 +162,6 @@ class World extends EventEmitter
     return @_families[maskKey] ? (@_families[maskKey] = new Family(mask, @))
 
   _onComponentsChanged: (entity) ->
-    @__changed.push entity
+    @__changed.add entity
 
 module.exports = World

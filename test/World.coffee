@@ -1,5 +1,5 @@
 tape = require 'tape'
-World = require '../World'
+World = require '../World.coffee'
 
 # TODO: isolate/dependency injection:
 Entity = require '../Entity'
@@ -27,13 +27,13 @@ describe 'a world', (it) ->
     entities = (new Entity for i in [0..3])
   
     for e in entities
-      t.false world.entities.contains e
+      t.false world.entities.contains(e), "entity \##{i} not in world"
   
     world.addAll entities
     world.flush()
 
-    for e in entities
-      t.true world.entities.contains e
+    for e,i in entities
+      t.true world.entities.contains(e), "entity \##{i} in world"
     t.end()
 
   it 'always returns the entity when added, even if it already has been added', (t) ->
@@ -112,7 +112,8 @@ describe 'a world', (it) ->
     fired = false
     entitiesWithA.on 'entitiesAdded', (entitiesAdded) ->
       fired = true
-      t.deepEqual entities, entitiesAdded
+      for entity in entities
+        t.true entitiesAdded.contains entity
     
     # Above event should fire immediately, before next tick...
     world.addAll entities
@@ -136,7 +137,8 @@ describe 'a world', (it) ->
     fired = false
     entitiesWithA.on 'entitiesRemoved', (entitiesRemoved) ->
       fired = true
-      t.deepEqual entities, entitiesRemoved
+      for entity in entities
+        t.true entitiesRemoved.contains entity
     
     world.addAll entities
     world.flush()

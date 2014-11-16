@@ -31,14 +31,16 @@
     }
 
     Family.prototype._onEntitiesAdded = function(entities) {
-      var entitiesAdded, entity, _i, _len;
-      entitiesAdded = [];
-      for (_i = 0, _len = entities.length; _i < _len; _i++) {
-        entity = entities[_i];
+      var entitiesAdded, entity, next;
+      entitiesAdded = new LinkedList;
+      next = entities.first;
+      while (next) {
+        entity = next.obj;
         if (entity._components.has(this.components)) {
           this.add(entity);
-          entitiesAdded.push(entity);
+          entitiesAdded.add(entity);
         }
+        next = next.next;
       }
       if (entitiesAdded.length > 0) {
         this.emit('entitiesAdded', entitiesAdded);
@@ -46,14 +48,16 @@
     };
 
     Family.prototype._onEntitiesRemoved = function(entities) {
-      var entitiesRemoved, entity, _i, _len;
-      entitiesRemoved = [];
-      for (_i = 0, _len = entities.length; _i < _len; _i++) {
-        entity = entities[_i];
+      var entitiesRemoved, entity, next;
+      entitiesRemoved = new LinkedList;
+      next = entities.first;
+      while (next) {
+        entity = next.obj;
         if (!this.remove(entity)) {
           continue;
         }
-        entitiesRemoved.push(entity);
+        entitiesRemoved.add(entity);
+        next = next.next;
       }
       if (entitiesRemoved.length > 0) {
         this.emit('entitiesRemoved', entitiesRemoved);
@@ -61,22 +65,24 @@
     };
 
     Family.prototype._onEntitiesChanged = function(entities) {
-      var added, entity, removed, _i, _len;
-      added = [];
-      removed = [];
-      for (_i = 0, _len = entities.length; _i < _len; _i++) {
-        entity = entities[_i];
+      var added, entity, next, removed;
+      added = new LinkedList;
+      removed = new LinkedList;
+      next = entities.first;
+      while (next) {
+        entity = next.obj;
         if (!this.contains(entity)) {
           if (entity._components.has(this.components)) {
             this.add(entity);
-            added.push(entity);
+            added.add(entity);
           }
         } else {
           if (!entity._components.has(this.components)) {
             this.remove(entity);
-            removed.push(entity);
+            removed.add(entity);
           }
         }
+        next = next.next;
       }
       if (added.length > 0) {
         this.emit('entitiesAdded', added);
@@ -110,66 +116,74 @@
       this.systems = new LinkedList;
       this._families = {};
       this._onComponentsChanged = this._onComponentsChanged.bind(this);
-      this.__added = [];
-      this.__removed = [];
-      this.__changed = [];
+      this.__added = new LinkedList;
+      this.__removed = new LinkedList;
+      this.__changed = new LinkedList;
     }
 
     World.prototype.add = function(entity) {
       if (this.entities.contains(entity)) {
         return entity;
       }
-      this.__added.push(entity);
+      this.__added.add(entity);
       return entity;
     };
 
     World.prototype.addAll = function(entities) {
-      var _ref1;
-      (_ref1 = this.__added).push.apply(_ref1, entities);
+      var entity, _i, _len;
+      for (_i = 0, _len = entities.length; _i < _len; _i++) {
+        entity = entities[_i];
+        this.__added.add(entity);
+      }
     };
 
     World.prototype.remove = function(entity) {
-      this.__removed.push(entity);
+      this.__removed.add(entity);
     };
 
     World.prototype.removeAll = function(entities) {
-      var _ref1;
-      (_ref1 = this.__removed).push.apply(_ref1, entities);
+      var entity, _i, _len;
+      for (_i = 0, _len = entities.length; _i < _len; _i++) {
+        entity = entities[_i];
+        this.__removed.add(entity);
+      }
       return entities;
     };
 
     World.prototype.flush = function() {
-      var entity, _i, _j, _len, _len1, _ref1, _ref2;
+      var entity, next;
       if (this.__added.length > 0) {
-        _ref1 = this.__added;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          entity = _ref1[_i];
+        next = this.__added.first;
+        while (next) {
+          entity = next.obj;
           if (this.entities.contains(entity)) {
             continue;
           }
           this.entities.add(entity);
           entity.on('componentsAdded', this._onComponentsChanged);
           entity.on('componentsRemoved', this._onComponentsChanged);
+          next = next.next;
         }
         this.emit('__entitiesAdded', this.__added);
-        this.__added.length = 0;
+        this.__added.clear();
       }
       if (this.__removed.length > 0) {
-        _ref2 = this.__removed;
-        for (_j = 0, _len1 = _ref2.length; _j < _len1; _j++) {
-          entity = _ref2[_j];
+        next = this.__removed.first;
+        while (next) {
+          entity = next.obj;
           if (!this.entities.remove(entity)) {
             continue;
           }
           entity.removeListener('componentsAdded', this._onComponentsChanged);
           entity.removeListener('componentsRemoved', this._onComponentsChanged);
+          next = next.next;
         }
         this.emit('__entitiesRemoved', this.__removed);
-        this.__removed.length = 0;
+        this.__removed.clear();
       }
       if (this.__changed.length > 0) {
         this.emit('__entitiesChanged', this.__changed);
-        return this.__changed.length = 0;
+        return this.__changed.clear();
       }
     };
 
@@ -214,7 +228,7 @@
     };
 
     World.prototype._onComponentsChanged = function(entity) {
-      return this.__changed.push(entity);
+      return this.__changed.add(entity);
     };
 
     return World;
