@@ -2,13 +2,13 @@
 
 A fast, flexible [Entity Component System][ecs_wikipedia] for JavaScript games. Bring your own components/systems.
 
-**NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/gitsubio/ecsape/issues).)
+**NOTE: This code has not yet been battle-tested; use at your own risk.** (Also, please [report issues](http://github.com/namuol/ecsape/issues).)
 
 [ecs_wikipedia]: http://en.wikipedia.org/wiki/Entity_component_system "Wikipedia: Entity component system"
 
 ## Examples
 
-For complete examples, see [ecsape-examples](http://github.com/gitsubio/ecsape-examples).
+For complete examples, see [ecsape-examples](http://github.com/namuol/ecsape-examples).
 
 ## API
 
